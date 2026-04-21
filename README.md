@@ -2,6 +2,23 @@
 
 Voice input/output for Claude Desktop — real-time speech-to-text via [faster-whisper](https://github.com/SYSTRAN/faster-whisper) with biquad noise filtering and rule-based emotion detection, paired with text-to-speech via [edge-tts](https://github.com/rany2/edge-tts). Runs as a local HTTP server on `localhost:5123` and exposes MCP tools for Claude Desktop integration.
 
+## Install — just ask your AI
+
+If you already have [`local`](https://github.com/josephwander-arch/local) installed in Claude Desktop, or you're sitting in Claude Code / Codex CLI / Gemini CLI, paste this prompt:
+
+> `https://github.com/josephwander-arch/voice` — Can you install this MCP for us to use here and the voice listening server, and make me a new `.bat` to call it and direct me to do what I need to do to get both sides running, then we can have a talk.
+
+Your AI will:
+
+1. Download the matching pre-built `voice-mcp.exe` for your architecture (ARM64 or x64) from [releases/latest](https://github.com/josephwander-arch/voice/releases/latest).
+2. Drop it somewhere sensible (usually `C:\CPC\servers\`).
+3. Edit your `claude_desktop_config.json` to register it as an MCP server (your existing servers are preserved; a timestamped backup is made first).
+4. Clone this repo and install the Python listener requirements (`pip install -r requirements.txt`).
+5. Write you a `START_VOICE_SERVER.bat` that launches `python voice_server.py` on boot.
+6. Tell you to quit and reopen Claude Desktop, start the listener, and you're talking.
+
+If your AI doesn't have filesystem/shell access, fall back to the manual install below.
+
 ## Features
 
 - **Speech-to-text** via faster-whisper (base model, int8 quantized)
@@ -20,7 +37,7 @@ Voice input/output for Claude Desktop — real-time speech-to-text via [faster-w
 - ffmpeg (for MP3→WAV conversion in TTS playback)
 - A working microphone
 
-## Installation
+## Manual installation
 
 ```bash
 pip install -r requirements.txt
