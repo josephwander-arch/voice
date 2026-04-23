@@ -2,6 +2,8 @@
 
 Voice input/output for Claude Desktop — real-time speech-to-text via [faster-whisper](https://github.com/SYSTRAN/faster-whisper) with biquad noise filtering and rule-based emotion detection, paired with text-to-speech via [edge-tts](https://github.com/rany2/edge-tts). Runs as a local HTTP server on `localhost:5123` and exposes MCP tools for Claude Desktop integration.
 
+This repo started out Windows-first, but the Python server path can also run locally on Linux, including Arch Linux x86_64.
+
 ## Install — just ask your AI
 
 If you already have [`local`](https://github.com/josephwander-arch/local) installed in Claude Desktop, or you're sitting in Claude Code / Codex CLI / Gemini CLI, paste this prompt:
@@ -34,7 +36,8 @@ If your AI doesn't have filesystem/shell access, fall back to the manual install
 
 - Python 3.11+
 - PortAudio (system library, required by PyAudio)
-- ffmpeg (for MP3→WAV conversion in TTS playback)
+- ffmpeg with `ffplay`, or another local audio player such as `mpv`
+- A working local playback path for TTS (`ffplay` preferred; `mpv`, `paplay`, `aplay`, or `pw-play` can also work depending on format)
 - A working microphone
 
 ## Manual installation
@@ -51,9 +54,32 @@ pip install -r requirements.txt
 
 ### ffmpeg
 
-- **Windows:** `winget install Gyan.FFmpeg` or download from [ffmpeg.org](https://ffmpeg.org/download.html). Ensure `ffmpeg` is on your PATH, or set the `VOICE_FFMPEG_PATH` environment variable.
+- **Windows:** `winget install Gyan.FFmpeg` or download from [ffmpeg.org](https://ffmpeg.org/download.html). Ensure `ffplay` is on your PATH.
 - **macOS:** `brew install ffmpeg`
 - **Linux:** `sudo apt install ffmpeg`
+
+### Arch Linux x86_64
+
+Install system dependencies:
+
+```bash
+sudo pacman -S --needed python python-pip base-devel portaudio ffmpeg alsa-utils pipewire-pulse
+```
+
+Create a virtual environment and install Python packages:
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install --upgrade pip
+pip install -r requirements.txt
+```
+
+Notes:
+
+- `PyAudio` builds against the system `portaudio` package on Arch.
+- TTS playback now prefers `ffplay` and can also fall back to `mpv`, `paplay`, `aplay`, or `pw-play`.
+- On PipeWire systems, verify the microphone in another app first if capture fails.
 
 ## Quick Start
 
@@ -73,6 +99,7 @@ python voice_server.py
 ```
 
 On Windows, you can also double-click `START_VOICE_SERVER.bat`.
+On Linux, you can run `./start_voice_server.sh`.
 
 ## Configuration
 
@@ -109,6 +136,19 @@ For production Claude Desktop use, companion **Rust MCP binaries** (`voice-mcp.e
 ```
 
 The Python `server.py` serves as a pure-Python MCP fallback if you prefer not to use the Rust binary.
+
+For Linux or local development, you can point your MCP client at the Python entrypoint instead:
+
+```json
+{
+  "mcpServers": {
+    "voice": {
+      "command": "/absolute/path/to/.venv/bin/python",
+      "args": ["/absolute/path/to/server.py"]
+    }
+  }
+}
+```
 
 ## Architecture
 
