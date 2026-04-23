@@ -2,7 +2,7 @@
 """
 Voice Input Server v2.0 - Enhanced Edition
 Features:
-  • faster-whisper with int8 (ARM64 optimized via CTranslate2)
+  • faster-whisper with int8 CPU inference
   • Biquad noise filtering (80Hz HP + 8kHz LP)
   • Emotion detection via audio features
   • Triple beep, level monitoring, end phrase stripping
@@ -250,7 +250,7 @@ print("╔═══════════════════════�
 print("║      Voice Server v2.0 (Enhanced Python)        ║")
 print("╠══════════════════════════════════════════════════╣")
 print("║ Features:                                        ║")
-print("║   • faster-whisper (ARM64 optimized)             ║")
+print("║   • faster-whisper (CPU int8)                    ║")
 print("║   • Biquad noise filtering                       ║")
 print("║   • Emotion detection                            ║")
 print("║   • Triple beep + level monitoring               ║")
@@ -271,7 +271,8 @@ print("[Voice] Model loaded!")
 # ═══════════════════════════════════════════════════════════════════
 class VoiceHandler(BaseHTTPRequestHandler):
     def log_message(self, format, *args):
-        print(f"[Voice] {args[0]}")
+        message = format % args if args else format
+        print(f"[Voice] {message}")
     
     def do_POST(self):
         parsed = urlparse(self.path)
@@ -280,7 +281,7 @@ class VoiceHandler(BaseHTTPRequestHandler):
         if parsed.path == '/listen':
             cfg = get_listen_defaults()
             timeout = int(params.get('timeout', [60])[0])
-            skip_emotion = params.get('skip_emotion', ['true'])[0].lower() == 'true'
+            skip_emotion = params.get('skip_emotion', ['false'])[0].lower() == 'true'
             skip_filter = params.get('skip_filter', [str(not cfg["noise_filter_enabled"]).lower()])[0].lower() == 'true'
             silence_timeout = float(params.get('silence_timeout', [cfg["silence_timeout"]])[0])
             min_speech_duration = float(params.get('min_speech_duration', [cfg["min_speech_duration"]])[0])

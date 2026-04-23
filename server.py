@@ -1,63 +1,90 @@
 #!/usr/bin/env python3
-"""
-Voice MCP Server - Full conversation mode with Edge TTS
-"""
+"""Voice MCP Server - Full conversation mode with Edge TTS."""
 
 from mcp.server.fastmcp import FastMCP
+import asyncio
+import json
 import os
 import shutil
-import urllib.request
-import json
-import asyncio
+import subprocess
 import tempfile
-import nest_asyncio
-
-nest_asyncio.apply()  # Allow nested event loops
+import urllib.request
 
 mcp = FastMCP("Voice")
+
+
+def _play_audio_file(path: str) -> None:
+    """Play an audio file using the first available local backend."""
+    extension = os.path.splitext(path)[1].lower()
+
+    if extension == ".wav":
+        try:
+            import simpleaudio as sa
+
+            wave_obj = sa.WaveObject.from_wave_file(path)
+            play_obj = wave_obj.play()
+            play_obj.wait_done()
+            return
+        except Exception:
+            pass
+
+    players = [
+        ["ffplay", "-nodisp", "-autoexit", "-loglevel", "error", path],
+        ["mpv", "--no-video", "--really-quiet", path],
+    ]
+    if extension == ".wav":
+        players.extend(
+            [
+                ["paplay", path],
+                ["aplay", path],
+                ["pw-play", path],
+            ]
+        )
+
+    for command in players:
+        executable = shutil.which(command[0])
+        if executable is None:
+            continue
+        subprocess.run([executable, *command[1:]], check=True)
+        return
+
+    raise RuntimeError(
+        "No audio playback backend available. Install ffplay, mpv, simpleaudio, "
+        "paplay, aplay, or pw-play."
+    )
 
 @mcp.tool()
 def speak(text: str, voice: str = "en-GB-RyanNeural", rate: str = "-15%") -> str:
     """
-    Speak text aloud using Windows TTS.
+    Speak text aloud using Edge TTS and a local audio player.
     
     Args:
         text: What to say
         voice: Voice name (default en-GB-RyanNeural)
         rate: Speaking rate, e.g. "-20%", "+10%", "-15%" (default -15%)
     """
+    temp_dir = tempfile.mkdtemp(prefix="voice-tts-")
+    temp_path = os.path.join(temp_dir, "claude_voice.mp3")
+    wav_path = os.path.join(temp_dir, "claude_voice.wav")
+
     try:
         import edge_tts
-        
-        # Create temp file for audio
-        temp_path = os.path.join(tempfile.gettempdir(), "claude_voice.mp3")
-        
+
         # Generate speech with edge-tts
         async def generate():
             communicate = edge_tts.Communicate(text, voice, rate=rate)
             await communicate.save(temp_path)
-        
+
         asyncio.run(generate())
-        
-        # Convert MP3 to WAV and play with simpleaudio (no delay)
-        from pydub import AudioSegment
-        import simpleaudio as sa
-        
-        # Set ffmpeg path for pydub (env var > PATH lookup > bare name)
-        FFMPEG_PATH = os.environ.get("VOICE_FFMPEG_PATH") or shutil.which("ffmpeg") or "ffmpeg"
-        AudioSegment.converter = FFMPEG_PATH
-        
-        audio = AudioSegment.from_mp3(temp_path)
-        wav_path = temp_path.replace('.mp3', '.wav')
-        audio.export(wav_path, format='wav')
-        
-        wave_obj = sa.WaveObject.from_wave_file(wav_path)
-        play_obj = wave_obj.play()
-        play_obj.wait_done()
-        
+
+        # Prefer direct playback of the generated MP3 to avoid fragile conversion paths.
+        _play_audio_file(temp_path)
+
         return "spoke"
     except Exception as e:
         return f"Error: {str(e)}"
+    finally:
+        shutil.rmtree(temp_dir, ignore_errors=True)
 
 @mcp.tool()
 def listen_for_speech(timeout: int = 30) -> str:
