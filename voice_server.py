@@ -2,7 +2,7 @@
 """
 Voice Input Server v2.0 - Enhanced Edition
 Features:
-  • faster-whisper with int8 (ARM64 optimized via CTranslate2)
+  • faster-whisper with int8 CPU inference
   • Biquad noise filtering (80Hz HP + 8kHz LP)
   • Emotion detection via audio features
   • Triple beep, level monitoring, end phrase stripping
@@ -250,7 +250,7 @@ print("╔═══════════════════════�
 print("║      Voice Server v2.0 (Enhanced Python)        ║")
 print("╠══════════════════════════════════════════════════╣")
 print("║ Features:                                        ║")
-print("║   • faster-whisper (ARM64 optimized)             ║")
+print("║   • faster-whisper (CPU int8)                    ║")
 print("║   • Biquad noise filtering                       ║")
 print("║   • Emotion detection                            ║")
 print("║   • Triple beep + level monitoring               ║")
