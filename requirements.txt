@@ -3,7 +3,4 @@ numpy>=1.26
 faster-whisper>=1.0
 scipy>=1.11
 edge-tts>=6.1
-pydub>=0.25
-simpleaudio>=1.0
-nest-asyncio>=1.6
 mcp>=1.0

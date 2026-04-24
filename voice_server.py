@@ -48,6 +48,13 @@ END_PHRASES = [
 import tomllib
 from pathlib import Path
 
+
+def _env_flag(name: str, default: bool) -> bool:
+    raw = os.environ.get(name)
+    if raw is None:
+        return default
+    return raw.strip().lower() not in {"0", "false", "no", "off"}
+
 def _find_config():
     candidates = [
         os.environ.get("VOICE_CONFIG_PATH"),
@@ -69,17 +76,23 @@ def get_listen_defaults():
             "rms_threshold": DEFAULT_RMS_THRESHOLD,
             "pre_record_enabled": True,
             "noise_filter_enabled": True,
+            "emotion_enabled": _env_flag("VOICE_EMOTION_ENABLED", True),
         }
     try:
         with open(VOICE_CONFIG_PATH, "rb") as f:
             config = tomllib.load(f)
         listen = config.get("listen", {})
+        emotion = config.get("emotion", {})
         return {
             "silence_timeout": listen.get("silence_timeout_secs", DEFAULT_SILENCE_TIMEOUT),
             "min_speech_duration": listen.get("min_speech_duration_secs", DEFAULT_MIN_SPEECH_DURATION),
             "rms_threshold": listen.get("rms_threshold", DEFAULT_RMS_THRESHOLD),
             "pre_record_enabled": listen.get("pre_record_enabled", True),
             "noise_filter_enabled": listen.get("noise_filter_enabled", True),
+            "emotion_enabled": _env_flag(
+                "VOICE_EMOTION_ENABLED",
+                emotion.get("enabled", True),
+            ),
         }
     except Exception:
         return {
@@ -88,6 +101,7 @@ def get_listen_defaults():
             "rms_threshold": DEFAULT_RMS_THRESHOLD,
             "pre_record_enabled": True,
             "noise_filter_enabled": True,
+            "emotion_enabled": _env_flag("VOICE_EMOTION_ENABLED", True),
         }
 
 # ═══════════════════════════════════════════════════════════════════
@@ -271,7 +285,8 @@ print("[Voice] Model loaded!")
 # ═══════════════════════════════════════════════════════════════════
 class VoiceHandler(BaseHTTPRequestHandler):
     def log_message(self, format, *args):
-        print(f"[Voice] {args[0]}")
+        message = format % args if args else format
+        print(f"[Voice] {message}")
     
     def do_POST(self):
         parsed = urlparse(self.path)
@@ -280,7 +295,10 @@ class VoiceHandler(BaseHTTPRequestHandler):
         if parsed.path == '/listen':
             cfg = get_listen_defaults()
             timeout = int(params.get('timeout', [60])[0])
-            skip_emotion = params.get('skip_emotion', ['true'])[0].lower() == 'true'
+            skip_emotion = params.get(
+                'skip_emotion',
+                [str(not cfg["emotion_enabled"]).lower()],
+            )[0].lower() == 'true'
             skip_filter = params.get('skip_filter', [str(not cfg["noise_filter_enabled"]).lower()])[0].lower() == 'true'
             silence_timeout = float(params.get('silence_timeout', [cfg["silence_timeout"]])[0])
             min_speech_duration = float(params.get('min_speech_duration', [cfg["min_speech_duration"]])[0])
