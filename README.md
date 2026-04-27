@@ -4,13 +4,13 @@ Voice input/output for Claude Desktop — real-time speech-to-text via [faster-w
 
 ## Install — just ask your AI
 
-If you already have [`local`](https://github.com/josephwander-arch/local) installed in Claude Desktop, or you're sitting in Claude Code / Codex CLI / Gemini CLI, paste this prompt:
+If you already have [`local`](https://github.com/AIWander/local) installed in Claude Desktop, or you're sitting in Claude Code / Codex CLI / Gemini CLI, paste this prompt:
 
-> `https://github.com/josephwander-arch/voice` — Can you install this MCP for us to use here and the voice listening server, and make me a new `.bat` to call it and direct me to do what I need to do to get both sides running, then we can have a talk.
+> `https://github.com/AIWander/voice` — Can you install this MCP for us to use here and the voice listening server, and make me a new `.bat` to call it and direct me to do what I need to do to get both sides running, then we can have a talk.
 
 Your AI will:
 
-1. Download the matching pre-built `voice-mcp.exe` for your architecture (ARM64 or x64) from [releases/latest](https://github.com/josephwander-arch/voice/releases/latest).
+1. Download the matching pre-built `voice-mcp.exe` for your architecture (ARM64 or x64) from [releases/latest](https://github.com/AIWander/voice/releases/latest).
 2. Drop it somewhere sensible (usually `C:\CPC\servers\`).
 3. Edit your `claude_desktop_config.json` to register it as an MCP server (your existing servers are preserved; a timestamped backup is made first).
 4. Clone this repo and install the Python listener requirements (`pip install -r requirements.txt`).
