@@ -1,6 +1,7 @@
-# Dependabot configuration for voice
-# Security-only updates initially. Version updates can be enabled later
-# once the team has bandwidth to review them.
+# Dependabot configuration — security-only
+# Cargo/pip version update blocks removed. Dependabot Security Updates
+# (org-level toggle) handles vulnerability fixes for all ecosystems.
+# Only GitHub Actions version updates are tracked here.
 
 version: 2
 updates:
@@ -12,12 +13,3 @@ updates:
     labels:
       - "dependencies"
       - "github-actions"
-
-  - package-ecosystem: "pip"
-    directory: "/"
-    schedule:
-      interval: "weekly"
-    open-pull-requests-limit: 5
-    labels:
-      - "dependencies"
-      - "python"
