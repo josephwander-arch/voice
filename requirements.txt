@@ -6,4 +6,4 @@ edge-tts>=6.1
 pydub>=0.25
 simpleaudio>=1.0
 nest-asyncio>=1.6
-mcp>=1.0
+mcp>=1.27.0
