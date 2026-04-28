@@ -33,3 +33,6 @@ Thumbs.db
 
 # Whisper model cache (downloaded on first run)
 # Users should not commit downloaded models
+
+# Backup files
+*.bak
