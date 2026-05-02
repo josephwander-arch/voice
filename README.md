@@ -127,6 +127,12 @@ The Python `server.py` serves as a pure-Python MCP fallback if you prefer not to
 | `VOICE_FFMPEG_PATH` | Path to ffmpeg binary | Auto-discovered via PATH |
 | `VOICE_EMOTION_LOG_DIR` | Directory for emotion analysis logs | `~/.voice/logs/` |
 
+## Rust MCP wrapper
+
+For a faster, single-binary alternative to the Python `server.py` MCP wrapper, see [`AIWander/voice-mcp`](https://github.com/AIWander/voice-mcp). It exposes 7 tools (vs 3 in the Python wrapper, including `speak_and_listen`, `voice_checkpoint`, `voice_load_checkpoint`, `voice_get_transcript`) and ships prebuilt Windows binaries (ARM64 + x64). Talks to the same `voice_server.py` listener over `localhost:5123`.
+
+---
+
 ## License
 
 Apache 2.0 — see [LICENSE](LICENSE)
